@@ -7,12 +7,66 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { background-color: #f8f9fa; font-family: "Microsoft JhengHei", sans-serif; }
-        .query-card { max-width: 450px; margin: 50px auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: none; }
-        .card-header { background: #1e3a8a; color: white; text-align: center; padding: 25px; border-radius: 15px 15px 0 0 !important; }
-        .result-box { display: none; margin-top: 20px; }
-        .table th { width: 40%; }
-        .hint-text { font-size: 0.85rem; color: #6c757d; margin-top: 5px; }
+        :root {
+            --pm-blue: #1e3a8a;
+            --pm-gold: #b2945e;
+        }
+        body { 
+            background: linear-gradient(180deg, #f0f4f8 0%, #dbeafe 100%); 
+            font-family: "Microsoft JhengHei", sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+        /* 標題左側 Logo */
+        .header-logo {
+            height: 45px;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+        /* 底部專用 Logo */
+        .footer-logo {
+            max-width: 200px; /* 底部 Logo 通常可以稍微寬一點 */
+            height: auto;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .query-card { 
+            max-width: 450px; 
+            margin: 40px auto; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.15); 
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+        }
+        .card-header { 
+            background: var(--pm-blue); 
+            color: white; 
+            padding: 25px 15px; 
+            border-radius: 20px 20px 0 0 !important;
+            border-bottom: 4px solid var(--pm-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-text-group { text-align: left; }
+        .btn-primary { 
+            background-color: var(--pm-blue); 
+            border: none; 
+            padding: 12px; 
+            font-weight: bold; 
+            border-radius: 10px;
+        }
+        .result-box { display: none; margin-top: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .table th { width: 40%; background-color: #f1f5f9; }
+        .footer-info { 
+            text-align: center; 
+            margin-top: 50px; 
+            color: #475569; 
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -20,48 +74,52 @@
 <div class="container">
     <div class="card query-card">
         <div class="card-header">
-            <h4 class="mb-0">普門中學115年第2次學藝競賽</h4>
-            <p class="mb-0 mt-2 opacity-75" style="font-size: 0.9rem;">成績查詢系統</p>
+            <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+            <div class="header-text-group">
+                <h5 class="mb-0 fw-bold">普門中學115年</h5>
+                <p class="mb-0 opacity-75" style="font-size: 0.85rem;">第2次學藝競賽查詢</p>
+            </div>
         </div>
         <div class="card-body p-4">
             <div class="mb-3">
                 <label class="form-label fw-bold">查詢帳號</label>
-                <input type="text" id="userInput" class="form-control" placeholder="請輸入6位數帳號">
-                <div class="hint-text">說明：考場(4位) + 准考證號末2位<br>範例：1203 + 01 = 120301</div>
+                <input type="text" id="userInput" class="form-control" placeholder="請輸入 6 位數帳號">
+                <div style="font-size: 0.8rem; color: #6c757d; margin-top: 5px;">💡 考場(4位) + 准考證號末2位</div>
             </div>
             <div class="mb-4">
-                <label class="form-label fw-bold">密碼 (手機末4碼)</label>
-                <input type="password" id="passInput" class="form-control" placeholder="請輸入手機末4碼">
+                <label class="form-label fw-bold">查詢密碼</label>
+                <input type="password" id="passInput" class="form-control" placeholder="請輸入手機末 4 碼">
             </div>
-            <button onclick="search()" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">立即查詢成績</button>
+            <button onclick="search()" class="btn btn-primary w-100 py-3 shadow">立即查詢成績</button>
 
             <div id="resultArea" class="result-box">
-                <div class="alert alert-success text-center py-1 fw-bold">查詢成功</div>
-                <table class="table table-bordered align-middle">
-                    <tr><th class="bg-light">考生姓名</th><td id="resName"></td></tr>
-                    <tr><th class="bg-light">國文</th><td id="resChi"></td></tr>
-                    <tr><th class="bg-light">數學</th><td id="resMat"></td></tr>
-                    <tr><th class="bg-light">英文</th><td id="resEng"></td></tr>
-                    <tr><th class="bg-light">總分</th><td id="resTotal" class="text-primary fw-bold"></td></tr>
-                    <tr id="rankRow"><th class="bg-light">排名</th><td id="resRank" class="fw-bold text-danger"></td></tr>
+                <div class="alert alert-success text-center py-2 fw-bold mb-3">✅ 查詢成功</div>
+                <table class="table table-bordered align-middle shadow-sm">
+                    <tr><th>考生姓名</th><td id="resName" class="fw-bold"></td></tr>
+                    <tr><th>國文</th><td id="resChi"></td></tr>
+                    <tr><th>數學</th><td id="resMat"></td></tr>
+                    <tr><th>英文</th><td id="resEng"></td></tr>
+                    <tr><th>總成績</th><td id="resTotal" class="text-primary fw-bold"></td></tr>
+                    <tr id="rankRow"><th class="bg-warning-subtle">全校排名</th><td id="resRank" class="fw-bold text-danger"></td></tr>
                 </table>
-                <div id="rankHint" class="text-center mt-3 text-muted" style="font-size: 0.8rem; display:none;">
-                    註：排名僅顯示前 10 名。
-                </div>
             </div>
         </div>
+    </div>
+    
+    <div class="footer-info">
+        <img src="logo02.png" alt="Footer Logo" class="footer-logo" onerror="this.style.display='none'">
+        <div>佛光山普門高級中學 PUMON HIGH SCHOOL</div>
     </div>
 </div>
 
 <script>
     function search() {
-        const user = document.getElementById('userInput').value.trim(); // 預期為 6 碼
+        const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
         const resultArea = document.getElementById('resultArea');
         const rankRow = document.getElementById('rankRow');
-        const rankHint = document.getElementById('rankHint');
 
-        if(!user || !pass) { alert("請填寫帳號與密碼"); return; }
+        if(!user || !pass) { alert("請輸入查詢帳號與密碼"); return; }
 
         Papa.parse("data.csv", {
             download: true,
@@ -69,10 +127,6 @@
             skipEmptyLines: true,
             complete: function(results) {
                 const data = results.data;
-                
-                // 比對邏輯：
-                // row['合併准考證號'] 是 10 碼 (例如 1204201025)
-                // 我們取它的前 4 碼 (考場) + 後 2 碼 (准考證末2碼) 來跟使用者輸入的 6 碼比對
                 const match = data.find(row => {
                     const fullID = String(row['合併准考證號']).trim();
                     const shortID = fullID.substring(0, 4) + fullID.substring(fullID.length - 2);
@@ -81,25 +135,21 @@
 
                 if (match) {
                     document.getElementById('resName').innerText = match['學生姓名'];
-                    document.getElementById('resChi').innerText = match['國文'];
-                    document.getElementById('resMat').innerText = match['數學'];
-                    document.getElementById('resEng').innerText = match['英文'];
-                    document.getElementById('resTotal').innerText = match['總成績'];
+                    document.getElementById('resChi').innerText = match['國文'] + " 分";
+                    document.getElementById('resMat').innerText = match['數學'] + " 分";
+                    document.getElementById('resEng').innerText = match['英文'] + " 分";
+                    document.getElementById('resTotal').innerText = match['總成績'] + " 分";
                     
                     const rankNum = parseInt(match['排名']);
                     if (!isNaN(rankNum) && rankNum <= 10) {
                         document.getElementById('resRank').innerText = "第 " + rankNum + " 名";
                         rankRow.style.display = 'table-row';
-                        rankHint.style.display = 'block';
                     } else {
                         rankRow.style.display = 'none';
-                        rankHint.style.display = 'none';
                     }
-
                     resultArea.style.display = 'block';
                 } else {
-                    alert("查無資料，請確認 6 位數帳號與手機末 4 碼是否正確。");
-                    resultArea.style.display = 'none';
+                    alert("驗證失敗：帳號或密碼不正確。");
                 }
             }
         });
