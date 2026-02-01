@@ -5,101 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成績查詢系統</title>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; background: #f4f7f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .login-card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #555; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #1a73e8; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 10px; }
         button:hover { background: #1557b0; }
-        #result { margin-top: 30px; display: none; border-top: 2px solid #eee; padding-top: 20px; }
-        .score-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .score-table th, .score-table td { border: 1px solid #eee; padding: 12px; text-align: center; }
-        .score-table th { background: #f8f9fa; color: #666; }
-        .error { color: #d93025; text-align: center; margin-top: 15px; font-weight: bold; }
-        .rank-highlight { font-size: 1.2em; color: #e67e22; font-weight: bold; }
+        .result-box { display: none; margin-top: 25px; text-align: left; border-top: 2px solid #eee; padding-top: 20px; }
+        .error { color: #d93025; background: #fdecea; padding: 10px; border-radius: 5px; margin-top: 15px; font-size: 14px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; }
+        th { background: #f8f9fa; }
+        .rank { color: #e67e22; font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>🏆 成績查詢系統</h2>
-    
-    <div id="login-form">
-        <div class="form-group">
-            <label>准考證號 (帳號)</label>
-            <input type="text" id="username" placeholder="請輸入准考證號">
-        </div>
-        <div class="form-group">
-            <label>手機末 4 碼 (密碼)</label>
-            <input type="password" id="password" placeholder="請輸入手機末 4 碼">
-        </div>
-        <button onclick="checkScore()">登入查詢</button>
-        <div id="error-msg" class="error"></div>
+<div class="card">
+    <h2>🏆 成績查詢</h2>
+    <div id="login-area">
+        <input type="text" id="stu-id" placeholder="請輸入准考證號 (帳號)">
+        <input type="password" id="stu-pwd" placeholder="請輸入手機末 4 碼 (密碼)">
+        <button onclick="queryScore()">登入查詢</button>
+        <div id="err-msg" class="error"></div>
     </div>
 
-    <div id="result">
-        <h3 id="student-name" style="text-align: center;"></h3>
-        <table class="score-table">
+    <div id="result-area" class="result-box">
+        <h3 id="res-name" style="text-align:center"></h3>
+        <table>
             <tr><th>科目</th><th>分數</th></tr>
-            <tr><td>國文</td><td id="score-chinese"></td></tr>
-            <tr><td>數學</td><td id="score-math"></td></tr>
-            <tr><td>英文</td><td id="score-english"></td></tr>
-            <tr><td>總成績</td><td id="score-total" style="font-weight:bold;"></td></tr>
-            <tr><td>全體排名</td><td id="score-rank" class="rank-highlight"></td></tr>
+            <tr><td>國文</td><td id="res-chi"></td></tr>
+            <tr><td>數學</td><td id="res-mat"></td></tr>
+            <tr><td>英文</td><td id="res-eng"></td></tr>
+            <tr><td>總分</td><td id="res-total" style="font-weight:bold"></td></tr>
+            <tr><td>排名</td><td class="rank" id="res-rank"></td></tr>
         </table>
-        <button onclick="location.reload()" style="margin-top: 20px; background: #666;">回上一頁</button>
+        <button onclick="location.reload()" style="background:#6c757d; font-size: 14px;">重新查詢</button>
     </div>
 </div>
 
 <script>
-    async function checkScore() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const errorMsg = document.getElementById('error-msg');
-        errorMsg.innerText = "";
+    async function queryScore() {
+        const id = document.getElementById('stu-id').value.trim();
+        const pwd = document.getElementById('stu-pwd').value.trim();
+        const errMsg = document.getElementById('err-msg');
+        const resArea = document.getElementById('result-area');
+        const loginArea = document.getElementById('login-area');
 
-        if (!username || !password) {
-            errorMsg.innerText = "請填寫帳號及密碼";
+        errMsg.style.display = 'none';
+
+        if (!id || !pwd) {
+            showError("請完整填寫帳號與密碼");
             return;
         }
 
         try {
-            // 1. 嘗試抓取該學生的資料檔案
-            const response = await fetch(`data/${username}.json`);
-            
+            // 1. 嘗試抓取 JSON 檔案 (強制加上 .json 副檔名)
+            const filePath = `data/${id}.json`;
+            const response = await fetch(filePath);
+
             if (!response.ok) {
-                errorMsg.innerText = "找不到此准考證號，請檢查輸入是否正確。";
+                if (response.status === 404) {
+                    showError(`查無此准考證號：${id}\n(請確認 data 資料夾內有 ${id}.json)`);
+                } else {
+                    showError(`連線錯誤: ${response.status}`);
+                }
                 return;
             }
 
             const data = await response.json();
 
-            // 2. 驗證手機末 4 碼 (取出家長手機欄位的最後 4 位數)
-            // 支援欄位名：家長手機 或 手機
-            const phone = (data['家長手機'] || data['手機'] || "").toString();
-            const lastFour = phone.slice(-4);
+            // 2. 驗證密碼 (家長手機末 4 碼)
+            // 根據您的附件，欄位名稱可能是「家長手機」
+            const phoneStr = (data['家長手機'] || data['手機'] || "").toString();
+            const lastFour = phoneStr.slice(-4);
 
-            if (password !== lastFour) {
-                errorMsg.innerText = "密碼錯誤 (手機末 4 碼不符)。";
+            if (pwd !== lastFour) {
+                showError("密碼錯誤！請輸入家長手機末 4 碼");
                 return;
             }
 
-            // 3. 顯示結果
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('student-name').innerText = data['學生姓名'] + " 同學";
-            document.getElementById('score-chinese').innerText = data['國文'];
-            document.getElementById('score-math').innerText = data['數學'];
-            document.getElementById('score-english').innerText = data['英文'];
-            document.getElementById('score-total').innerText = data['總成績'];
-            document.getElementById('score-rank').innerText = "第 " + data['排名'] + " 名";
+            // 3. 顯示成績
+            loginArea.style.display = 'none';
+            resArea.style.display = 'block';
+            document.getElementById('res-name').innerText = data['學生姓名'] || "同學";
+            document.getElementById('res-chi').innerText = data['國文'] || 0;
+            document.getElementById('res-mat').innerText = data['數學'] || 0;
+            document.getElementById('res-eng').innerText = data['英文'] || 0;
+            document.getElementById('res-total').innerText = data['總成績'] || 0;
+            document.getElementById('res-rank').innerText = "第 " + (data['排名'] || "-") + " 名";
 
-        } catch (err) {
-            errorMsg.innerText = "連線發生錯誤，請稍後再試。";
-            console.error(err);
+        } catch (e) {
+            showError("系統錯誤：" + e.message);
         }
+    }
+
+    function showError(text) {
+        const err = document.getElementById('err-msg');
+        err.innerText = text;
+        err.style.display = 'block';
     }
 </script>
 
